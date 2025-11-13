@@ -13,8 +13,8 @@
     Configurar nuestro proyecto para que trabaje con Handlebars y websocket. ✅
 
     - Aspectos a incluir
-    Configurar el servidor para integrar el motor de plantillas Handlebars e instalar un servidor de socket.io al mismo.
-    Crear una vista “home.handlebars” la cual contenga una lista de todos los productos agregados hasta el momento
+    Configurar el servidor para integrar el motor de plantillas Handlebars e instalar un servidor de socket.io al mismo.✅
+    Crear una vista “home.handlebars” la cual contenga una lista de todos los productos agregados hasta el momento ❓
 
     - Sugerencias
     Ya que la conexión entre una consulta HTTP y websocket no está contemplada dentro de la clase. Se recomienda que, 
@@ -54,10 +54,13 @@ app.engine('handlebars', handlebars.engine())       // define cómo procesar los
 app.set('view engine', 'handlebars')                // define qué motor usar, en este caso handlebars
 app.set('views', path.join(__dirname, 'views'))     // define dónde están las vistas
 
+// Servir archivos estáticos (como JS, CSS, imágenes, etc.)
+app.use(express.static(path.join(__dirname, 'public')))
+
 // Manejo de ProductManager
 const pathProduct = path.join(__dirname, 'json', 'products.json')
 const productManager = new ProductManager(pathProduct)
-export let products = productManager.getInstance()
+let products = productManager.getInstance()
 
 // Manejo de CartManager
 const pathCarts = path.join(__dirname, 'json', 'carts.json')
@@ -68,8 +71,8 @@ let carts = cartManager.getInstance()
 app.use(express.json())
 
 // iniciar el servidor 
-app.listen(PORT, () => {
-    console.log(`Servidor corriendo en el puerto ${PORT}`)
+server.listen(PORT, () => {
+    console.log(`Servidor corriendo en el puerto http://localhost:${PORT}`)
 })
 
 // ruta principal 
@@ -162,3 +165,8 @@ app.post('/:cid/product/:pid', (req, res) => {
 
 // renderiza los productos en tiempo real
 app.use('/realtimeproducts', realTimeProducts)
+
+io.on('connection', (socket) => {
+    // emitir la coleccion de productos
+    socket.emit('lista_productos', products)
+})
