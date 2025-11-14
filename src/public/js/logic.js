@@ -7,7 +7,7 @@ socket.on('lista_productos', (products) => {
    const ul = document.createElement('ul')
    listaProductos.appendChild(ul)
 
-   products.data  .forEach(product => {
+   products.data.forEach(product => {
       const li = document.createElement('li')
       li.innerText = `${product.title}, Precio: ${product.price}`
       ul.appendChild(li)

@@ -4,17 +4,17 @@
     - Websockets
     crear una vista “realTimeProducts.handlebars”, la cual vivirá en el endpoint “/realtimeproducts” 
     en nuestro views router, ésta contendrá la misma lista de productos, sin embargo, 
-    ésta trabajará con websockets.✅
+    ésta trabajará con websockets.
 
     Al trabajar con websockets, cada vez que creemos un producto nuevo, o bien cada vez que eliminemos un 
     producto, se debe actualizar automáticamente en dicha vista la lista.
 
     - Consigna
-    Configurar nuestro proyecto para que trabaje con Handlebars y websocket. ✅
+    Configurar nuestro proyecto para que trabaje con Handlebars y websocket. 
 
     - Aspectos a incluir
-    Configurar el servidor para integrar el motor de plantillas Handlebars e instalar un servidor de socket.io al mismo.✅
-    Crear una vista “home.handlebars” la cual contenga una lista de todos los productos agregados hasta el momento ❓
+    Configurar el servidor para integrar el motor de plantillas Handlebars e instalar un servidor de socket.io al mismo.
+    Crear una vista “home.handlebars” la cual contenga una lista de todos los productos agregados hasta el momento
 
     - Sugerencias
     Ya que la conexión entre una consulta HTTP y websocket no está contemplada dentro de la clase. Se recomienda que, 
@@ -96,15 +96,18 @@ app.get('/api/products/:pid', (req, res) => {
 
 // Debe agregar un nuevo producto con los siguientes campos:
 // id: Number/String (No se manda desde el body, se autogenera para asegurar que nunca se repitan los ids).
+// emite la lista de productos actualizada a los usuarios en linea
 app.post("/api/products/", (req, res) => {
     const result = productManager.addProduct(req.body)
 
     if(result.error) return res.status(400).json({ message: result.message, missing: result.missingFields, invalid: result.invalidFields })
         res.status(201).json({ message: result.message, product: result.product })
+        io.emit('lista_productos', products)
 })
 
 // Debe actualizar un producto por los campos enviados desde el body.  
 // No se debe actualizar ni eliminar el id al momento de hacer la actualización.
+// emite la lista de productos actualizada a los usuarios en linea
 app.put("/api/products/:pid", (req, res) => {
     const id = req.params.pid               // el id del producto desde la URL
     const updates = req.body                // los campos que vienen en el body
@@ -112,14 +115,17 @@ app.put("/api/products/:pid", (req, res) => {
 
     if(result.error) return res.status(404).json({ message: result.message })
         res.status(200).json({ message: result.message, product: result.product })
+        io.emit('lista_productos', products)
 })
 
 // Debe eliminar el producto con el pid indicado.
+// emite la lista de productos actualizada a los usuarios en linea
 app.delete("/api/products/:pid", (req, res) => {
     const result = productManager.eliminarProducto(req.params.pid)
 
     if(result.error) return res.status(404).json({ message: result.message })
         res.status(200).json({ message: result.message, product: result.product })
+        io.emit('lista_productos', products)
 })
 
 // ------------------
@@ -161,12 +167,12 @@ app.post('/:cid/product/:pid', (req, res) => {
         res.status(200).json({ message: result.message, cart: result.cartProducts })
 })
 
-/* Entrega 2 */
+/* ------------------------- Entrega 2 ----------------------------------  */
 
 // renderiza los productos en tiempo real
 app.use('/realtimeproducts', realTimeProducts)
 
 io.on('connection', (socket) => {
-    // emitir la coleccion de productos
+    // emitir la coleccion de productos a todos los sockets
     socket.emit('lista_productos', products)
 })
